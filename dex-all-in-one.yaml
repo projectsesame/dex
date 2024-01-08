@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    labels:
+        app: dex-oidc
+    name: dex-oidc
+    namespace: envoy-yang
+spec:
+    selector:
+        matchLabels:
+            app: dex-oidc
+    template:
+        metadata:
+            labels:
+                app: dex-oidc
+        spec:
+            containers:
+                - image: release-ci.daocloud.io/skoala/demo/dex:0.0.3
+                  imagePullPolicy: IfNotPresent
+                  name: dex-oidc
+                  env:
+                      -   name: DEX_ISSUER
+                          value: http://10.6.222.22:30051/dex
+                      -   name: DEX_USE_STATIC_CLIENT
+                          value: 'true'
+                      -   name: DEX_STATIC_CLIENT_REDIRECT_URI
+                          value: https://yangyang.daocloud.io:30443/oauth2/callback
+                  ports:
+                      - containerPort: 5556
+                        name: http
+                        protocol: TCP
+                      - containerPort: 5558
+                        name: telemetry
+                        protocol: TCP
+            restartPolicy: Always
+            securityContext:
+                runAsNonRoot: true
+                runAsUser: 1001
+                runAsGroup: 1001
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: dex-oidc
+    namespace: envoy-yang
+    labels:
+        app: dex-oidc
+spec:
+    type: NodePort
+    ports:
+        - port: 5556
+          targetPort: http
+          protocol: TCP
+          name: http
+    selector:
+        app: dex-oidc
+

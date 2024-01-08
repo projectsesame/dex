@@ -38,6 +38,21 @@ oauth2:
   passwordConnector: {{ .Env.DEX_OAUTH2_PASSWORD_CONNECTOR }}
 {{- end }}
 
+{{- if getenv "DEX_USE_STATIC_CLIENT" ""}}
+staticClients:
+    - id: {{ getenv "DEX_STATIC_CLIENT_ID" "example-app" }}
+      redirectURIs:
+          - {{ getenv "DEX_STATIC_CLIENT_REDIRECT_URI" "http://127.0.0.1:5555/callback" }}
+      name: {{ getenv "DEX_STATIC_CLIENT_NAME" "Example App" }}
+      secret: {{ getenv "DEX_STATIC_CLIENT_SECRET" "ZXhhbXBsZS1hcHAtc2VjcmV0" }}
+staticPasswords:
+    - email: "admin@example.com"
+        # bcrypt hash of the string "password": $(echo password | htpasswd -BinC 10 admin | cut -d: -f2)
+      hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+      username: "admin"
+      userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+{{- end }}
+
 enablePasswordDB: {{ getenv "DEX_ENABLE_PASSWORD_DB" "true" }}
 
 connectors:
@@ -46,3 +61,4 @@ connectors:
   id: mock
   name: Example
 {{- end }}
+
